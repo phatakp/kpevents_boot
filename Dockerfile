@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM maven:3.9.9-amazoncorretto-21 AS builder
+FROM maven:3.9.16-eclipse-temurin-25 AS builder
 WORKDIR /app
 
 # Copy the Project files (pom.xml) and download dependencies

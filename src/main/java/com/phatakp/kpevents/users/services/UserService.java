@@ -1,6 +1,5 @@
 package com.phatakp.kpevents.users.services;
 
-import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.users.dto.request.UserCreateRequest;
 import com.phatakp.kpevents.users.dto.response.UserBalance;
 import com.phatakp.kpevents.users.dto.response.UserResponse;
@@ -17,9 +16,8 @@ public interface UserService {
 
     UserResponse getProfile();
 
-    List<UserBalance> getBalancesByCommittee(Committee committee);
+    List<UserBalance> getAllUserBalances();
 
     User getUserById(String userId);
 
-    UserBalance getCurrUserBalancesByCommittee(Committee committee);
 }

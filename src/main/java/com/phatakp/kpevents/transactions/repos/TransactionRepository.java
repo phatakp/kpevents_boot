@@ -39,14 +39,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             "left join fetch t.donation d " +
             "left join fetch d.bookings b " +
             "left join fetch b.item i " +
-            "where t.committee=:committee " +
+            "where t.committee=Committee.CULTURAL " +
             "and t.txnType=TxnType.DONATION " +
             "and b.year=:year " +
-            "and i.type=:itemType " +
+            "and i.type=ItemType.ANNADAAN " +
             "order by t.updatedAt desc")
-    List<Transaction> getBookingsByCommiteeAndYear(@Param("committee") Committee committee,
-                                                   @Param("year") Short year,
-                                                   @Param("itemType") ItemType itemType);
+    List<Transaction> getAnnadaanBookingsByYear(@Param("year") Short year);
+
+    @Query(value = "SELECT t from Transaction t " +
+            "left join fetch t.txnUser " +
+            "left join fetch t.donation d " +
+            "left join fetch d.bookings b " +
+            "left join fetch b.item i " +
+            "where t.committee=Committee.TEMPLE " +
+            "and t.txnType=TxnType.DONATION " +
+            "and i.type=ItemType.TEMPLE " +
+            "order by t.updatedAt desc")
+    List<Transaction> getTempleBookings();
 
     @Query(value = "SELECT t from Transaction t " +
             "join fetch t.txnUser " +

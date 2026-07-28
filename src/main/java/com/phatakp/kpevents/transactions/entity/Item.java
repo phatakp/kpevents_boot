@@ -57,14 +57,14 @@ public class Item {
 
     public float getAvailableQty(Short year){
         var booked = bookings.stream()
-                .filter(b -> b.getYear().equals(year))
+                .filter(b -> !this.type.equals(ItemType.ANNADAAN) || b.getYear().equals(year))
                 .mapToDouble(ItemBooking::getQuantity)
                 .sum();
         return (float) (quantity - booked);
     }
     public float getAvailableAmt(Short year){
         var booked = bookings.stream()
-                .filter(b -> b.getYear().equals(year))
+                .filter(b-> !this.type.equals(ItemType.ANNADAAN) || b.getYear().equals(year))
                 .mapToDouble(ItemBooking::getAmount)
                 .sum();
         return (float) (amount - booked);

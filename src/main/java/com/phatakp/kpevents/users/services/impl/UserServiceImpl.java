@@ -1,6 +1,5 @@
 package com.phatakp.kpevents.users.services.impl;
 
-import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.common.exceptions.ResourceNotFoundException;
 import com.phatakp.kpevents.users.dto.request.UserCreateRequest;
 import com.phatakp.kpevents.users.dto.response.UserBalance;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -59,9 +57,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserBalance> getBalancesByCommittee(Committee committee) {
-        return userRepository.getUserBalances().stream()
-                .map(u -> UserMapper.toUserBalance(u, committee)).toList();
+    public List<UserBalance> getAllUserBalances() {
+        return userRepository.getAllUserBalances();
     }
 
     public User getUserById(String userId) {
@@ -69,10 +66,5 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
     }
 
-    @Override
-    public UserBalance getCurrUserBalancesByCommittee(Committee committee) {
-        String clerkId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        User user = userRepository.getCurrUserBalances(clerkId).orElse(null);
-        return UserMapper.toUserBalance(user, committee);
-    }
+
 }

@@ -110,7 +110,7 @@ public class AnnadaanDonationStrategy implements DonationTypeStrategy {
 
     @Override
     public TransactionPageResponse getDonations(Committee committee, Short year, Building building, DonationType donationType) {
-        List<TransactionResponse> txns = transactionRepository.getBookingsByCommiteeAndYear(committee, year, ItemType.ANNADAAN)
+        List<TransactionResponse> txns = transactionRepository.getAnnadaanBookingsByYear(year)
                 .stream()
                 .map(TransactionMapper::toResponse).toList();
         return TransactionMapper.toPageResponse(txns);

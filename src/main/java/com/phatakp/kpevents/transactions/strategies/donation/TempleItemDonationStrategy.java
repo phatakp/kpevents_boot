@@ -88,7 +88,7 @@ public class TempleItemDonationStrategy implements DonationTypeStrategy {
     @Override
     public TransactionPageResponse getDonations(Committee committee,  Short year, Building building, DonationType donationType) {
         List<TransactionResponse> txns = transactionRepository
-                .getBookingsByCommiteeAndYear(committee, year, ItemType.TEMPLE)
+                .getTempleBookings()
                 .stream()
                 .map(TransactionMapper::toResponse)
                 .toList();

@@ -1,18 +1,19 @@
 package com.phatakp.kpevents.users.dto.response;
 
-import com.phatakp.kpevents.common.enums.Building;
 import lombok.Builder;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Builder
 public record UserBalance(
         String clerkId,
         String firstName,
         String lastName,
-        Building building,
+        Character building,
         Short flat,
-        Double total,
-        List<BalanceStat> balances
+        String committee,
+        Short year,
+        String txnType,
+        String donationType,
+        Double balance
 ) implements Serializable {}

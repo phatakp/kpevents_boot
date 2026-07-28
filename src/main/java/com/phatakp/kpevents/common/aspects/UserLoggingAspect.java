@@ -17,19 +17,16 @@ import java.util.Arrays;
 @Aspect
 @Component
 @Slf4j
-public class LoggingAspect {
+public class UserLoggingAspect {
 
     @Value("${app.env}")
     private String appEnv;
 
-    @Pointcut("within(com.phatakp.kpevents.users.services.impl..*) || " +
-            "within(com.phatakp.kpevents.transactions.services.impl..*) || " +
-            "within(com.phatakp.kpevents.transactions.strategies.donation..*) || " +
-            "within(com.phatakp.kpevents.transactions.strategies.transaction..*)")
-    public void applicationControllers(){}
+    @Pointcut("within(com.phatakp.kpevents.users.services.impl.UserServiceImpl)")
+    public void userControllers(){}
 
-    @Around("applicationControllers()")
-    public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("userControllers()")
+    public Object logAroundUser(ProceedingJoinPoint joinPoint) throws Throwable {
         if (!appEnv.equals("dev")) {
             return joinPoint.proceed();
         }
@@ -39,7 +36,7 @@ public class LoggingAspect {
 
         // Log method entry and arguments
 
-        log.info("Entering: {}.{}() with argument[s] = {}", className, methodName, arguments);
+        log.info("[ENTER]==> {}.{}() with argument[s] = {}", className, methodName, arguments);
         long start = System.currentTimeMillis();
 
         try {
@@ -49,7 +46,7 @@ public class LoggingAspect {
             long executionTime = System.currentTimeMillis() - start;
 
             // Log method exit, result, and performance duration
-            log.info("Completed: {}.{}() Execution time = {} ms . ",
+            log.info("[EXIT]==> {}.{}() Execution time = {} ms . ",
                     className, methodName, executionTime);
 
             return result;

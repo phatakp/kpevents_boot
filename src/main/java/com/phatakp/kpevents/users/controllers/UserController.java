@@ -1,6 +1,5 @@
 package com.phatakp.kpevents.users.controllers;
 
-import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.users.dto.request.UserCreateRequest;
 import com.phatakp.kpevents.users.dto.response.UserBalance;
 import com.phatakp.kpevents.users.dto.response.UserResponse;
@@ -47,20 +46,10 @@ public class UserController {
     }
 
 
-    @GetMapping("/me/balances/committee/{committee}")
-    @PreAuthorize("@userSecurity.isActiveMember(authentication, #committee)")
-    public ResponseEntity<UserBalance> getCurrUserBalanceByCommittee(
-            @PathVariable Committee committee
-    ) {
-        return ResponseEntity.ok(userService.getCurrUserBalancesByCommittee(committee));
-    }
-
-    @GetMapping("/balances/committee/{committee}")
-    @PreAuthorize("@userSecurity.isActiveMember(authentication, #committee)")
-    public ResponseEntity<List<UserBalance>> getMemberBalanceByCommittee(
-            @PathVariable Committee committee
-    ) {
-        return ResponseEntity.ok(userService.getBalancesByCommittee(committee));
+    @GetMapping("/balances")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<List<UserBalance>> getAllUserBalances() {
+        return ResponseEntity.ok(userService.getAllUserBalances());
     }
 
 }

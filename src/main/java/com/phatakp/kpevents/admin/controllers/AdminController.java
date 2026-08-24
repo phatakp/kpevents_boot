@@ -28,6 +28,13 @@ public class AdminController {
         return ResponseEntity.ok(configService.getConfig());
     }
 
+    @PutMapping("/config")
+    public ResponseEntity<Config> updateConfig(
+            @Valid @RequestBody Config request
+    ) {
+        return ResponseEntity.ok(configService.updateConfig(request));
+    }
+
     @GetMapping("/members")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<List<UserResponse>> getAllMembers() {

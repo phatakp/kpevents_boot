@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse updateUser(UserCreateRequest request) {
         User user = getUserById(request.clerkId());
         user.setFirstName(request.firstName());

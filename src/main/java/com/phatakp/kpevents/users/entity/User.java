@@ -73,16 +73,16 @@ public class User{
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     @JsonIgnore
     @ToString.Exclude
-    private List<CommitteeMember> memberships;
+    private List<CommitteeMember> memberships = new ArrayList<>();
 
     @OneToMany(mappedBy = "txnUser",fetch = FetchType.LAZY)
     @JsonIgnore
     @ToString.Exclude
-    private List<Transaction> userTxns;
+    private List<Transaction> userTxns = new ArrayList<>();
 
 
     public String getUserInfo(){
-        return firstName + " " + lastName + "(" + building.name() + flat + ")";
+        return firstName + " " + lastName + " (" + building.name() + "-" + flat + ")";
     }
 
 }

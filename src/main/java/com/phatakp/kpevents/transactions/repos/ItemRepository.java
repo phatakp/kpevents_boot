@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("SELECT i FROM Item i " +
@@ -16,4 +17,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "WHERE i.type = :itemType " +
             "order by i.itemName")
     List<Item> getItems(ItemType itemType);
+
+    boolean existsByItemName(String itemName);
+
+    Optional<Item> findItemByItemName(String itemName);
 }

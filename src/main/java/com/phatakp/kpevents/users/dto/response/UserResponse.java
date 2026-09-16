@@ -1,6 +1,8 @@
 package com.phatakp.kpevents.users.dto.response;
 
 import com.phatakp.kpevents.common.enums.Building;
+import com.phatakp.kpevents.common.enums.Committee;
+import com.phatakp.kpevents.common.enums.MemberStatus;
 import com.phatakp.kpevents.common.enums.UserRole;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,6 +10,7 @@ import lombok.Builder;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DTO for {@link com.phatakp.kpevents.users.entity.User}
@@ -28,7 +31,7 @@ public record UserResponse(
 
         Short flat,
 
-        List<UserMembership> memberships
+        Map<Committee, MemberStatus> membership
 
 
 ) implements Serializable {

@@ -4,13 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.phatakp.kpevents.common.enums.Building;
 import com.phatakp.kpevents.common.enums.UserRole;
 import com.phatakp.kpevents.transactions.entity.Transaction;
-import com.phatakp.kpevents.users.dto.response.UserMembership;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 

@@ -3,6 +3,7 @@ package com.phatakp.kpevents.users.controllers;
 import com.phatakp.kpevents.users.dto.request.UserCreateRequest;
 import com.phatakp.kpevents.users.dto.response.UserBalance;
 import com.phatakp.kpevents.users.dto.response.UserResponse;
+import com.phatakp.kpevents.users.dto.response.UserStats;
 import com.phatakp.kpevents.users.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class UserController {
 
     @GetMapping("/balances")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
-    public ResponseEntity<List<UserBalance>> getAllUserBalances() {
+    public ResponseEntity<List<UserStats>> getAllUserBalances() {
         return ResponseEntity.ok(userService.getAllUserBalances());
     }
 

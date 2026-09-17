@@ -4,6 +4,7 @@ import com.phatakp.kpevents.common.exceptions.ResourceNotFoundException;
 import com.phatakp.kpevents.users.dto.request.UserCreateRequest;
 import com.phatakp.kpevents.users.dto.response.UserBalance;
 import com.phatakp.kpevents.users.dto.response.UserResponse;
+import com.phatakp.kpevents.users.dto.response.UserStats;
 import com.phatakp.kpevents.users.entity.User;
 import com.phatakp.kpevents.users.mappers.UserMapper;
 import com.phatakp.kpevents.users.repos.UserRepository;
@@ -58,8 +59,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserBalance> getAllUserBalances() {
-        return userRepository.getAllUserBalances();
+    public List<UserStats> getAllUserBalances() {
+        return userRepository.getUsersStats();
     }
 
     public User getUserById(String userId) {

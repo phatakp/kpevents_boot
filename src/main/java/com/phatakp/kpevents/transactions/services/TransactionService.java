@@ -24,7 +24,7 @@ public interface TransactionService {
                                             Building building,
                                             DonationType donationType);
 
-    List<CommitteeBalanceResponse> getBalancesByCommittee(Committee committee);
+    CommitteeStats getBalancesByCommittee(Committee committee);
 
     LinkedTransfer getLinkedTransfer(String txnId);
 

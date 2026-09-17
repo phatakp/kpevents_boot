@@ -2,6 +2,7 @@ package com.phatakp.kpevents.transactions.repos;
 
 import com.phatakp.kpevents.common.enums.*;
 import com.phatakp.kpevents.transactions.dto.response.CommitteeBalanceResponse;
+import com.phatakp.kpevents.transactions.dto.response.CommitteeStats;
 import com.phatakp.kpevents.transactions.dto.response.DonationStatsResponse;
 import com.phatakp.kpevents.transactions.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -95,16 +96,62 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     List<DonationStatsResponse> getDonationStatsByCommitteeAndYear(String committee, Short year);
 
 
-    @Query(value = "SELECT t.committee,t.year," +
-            "t.txn_type, d.type as donation_type, " +
-            "coalesce(sum(t.amount),0) as balance " +
-            " from transactions t " +
-            "left join public.donations d on t.id=d.id " +
-            "where t.committee=:committee " +
-            "group by t.committee,t.year," +
-            "t.txn_type, d.type " +
-            "order by t.txn_type desc", nativeQuery = true)
-    List<CommitteeBalanceResponse> getBalancesByCommittee(String committee);
+    @Query(value = """
+    with
+    committee_totals AS (
+        select committee, COALESCE(SUM(amount),0) AS total
+        from transactions
+        group by committee
+    ),
+    year_totals AS (
+        select committee,year, COALESCE(SUM(amount),0) AS total
+        from transactions
+        group by committee,year
+    ),
+    year_txn_type_totals AS (
+        select committee,year,txn_type, COALESCE(SUM(amount),0) AS total
+        from transactions
+        group by committee,year,txn_type
+    ),
+    year_donation_type_totals AS (
+        select committee,year,type, COALESCE(SUM(amount),0) AS total
+        from transactions
+        join donations on transactions.id = donations.id
+        group by committee,year,type
+    ),
+    year_agg AS (
+        select
+               committee,
+               json_agg(json_build_object('year',year, 'total',total))::text AS data
+        from year_totals
+        group by committee
+    ),
+    year_txn_type_agg AS (
+        select
+               committee,
+               json_agg(json_build_object('year',year, 'txnType',txn_type, 'total',total))::text AS data
+        from year_txn_type_totals
+        group by committee
+    ),
+    year_donation_type_agg AS (
+        select
+               committee,
+               json_agg(json_build_object('year',year, 'donationType',type, 'total',total))::text AS data
+        from year_donation_type_totals
+        group by committee
+    )
+    SELECT
+           ct.committee, ct.total,
+           COALESCE(yg.data, '[]') AS balanceByYear,
+           COALESCE(ytg.data, '[]') AS balanceByYearAndTxnType,
+           COALESCE(ydg.data, '[]') AS balanceByYearAndDonationType
+    from committee_totals ct
+    LEFT JOIN year_agg yg ON ct.committee=yg.committee
+    LEFT JOIN year_txn_type_agg ytg ON  ct.committee=ytg.committee
+    LEFT JOIN year_donation_type_agg ydg ON ct.committee=ydg.committee
+    WHERE ct.committee=:committee
+    """, nativeQuery = true)
+    List<CommitteeStats> getBalancesByCommittee(String committee);
 
     @Query("SELECT t FROM Transaction t " +
             "join fetch t.txnUser " +

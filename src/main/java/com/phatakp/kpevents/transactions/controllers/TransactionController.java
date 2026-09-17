@@ -36,12 +36,8 @@ public class TransactionController {
     }
 
 
-
-
-
-
     @GetMapping("/balances/committee/{committee}")
-    public ResponseEntity<List<CommitteeBalanceResponse>> getBalancesByCommmittee(
+    public ResponseEntity<CommitteeStats> getBalancesByCommmittee(
             @PathVariable Committee committee) {
         return ResponseEntity.ok(transactionService.getBalancesByCommittee(committee));
     }

@@ -76,8 +76,8 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public List<CommitteeBalanceResponse> getBalancesByCommittee(Committee committee) {
-        return transactionRepository.getBalancesByCommittee(committee.name());
+    public CommitteeStats getBalancesByCommittee(Committee committee) {
+        return transactionRepository.getBalancesByCommittee(committee.name()).stream().findFirst().orElse(null);
     }
 
     @Override

@@ -18,9 +18,13 @@ public class ConfigService {
     }
 
     public Config updateConfig(@Valid Config request) {
+
         if (request.getActiveYear()==null || request.getActiveYear()<2025 || request.getActiveYear()>2100) {
             throw new BusinessRuleException("INVALID_YEAR","Year should be between 2025 and 2100");
         }
-        return configRepository.save(request);
+        Config config = getConfig();
+        config.setActiveYear(request.getActiveYear());
+        config.setIsAnnadaanActive(request.getIsAnnadaanActive());
+        return configRepository.save(config);
     }
 }

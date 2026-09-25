@@ -6,7 +6,6 @@ import com.phatakp.kpevents.transactions.entity.Donation;
 import com.phatakp.kpevents.transactions.entity.Transaction;
 import com.phatakp.kpevents.transactions.mapper.DonationMapper;
 import com.phatakp.kpevents.transactions.repos.DonationRepository;
-import com.phatakp.kpevents.transactions.repos.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CulturalDonationStrategy implements DonationTypeStrategy {
     private final DonationRepository donationRepository;
-    private final TransactionRepository transactionRepository;
 
     @Override
     public Donation createDonation(TransactionRequest request) {

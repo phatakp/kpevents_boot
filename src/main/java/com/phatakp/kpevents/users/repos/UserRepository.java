@@ -96,7 +96,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query(value = "select u from User u " +
             "left join fetch u.memberships m " +
-            "where m.memberId.committee=:committee")
+            "where m.memberId.committee=:committee " +
+            "order by u.firstName")
     List<User> getUsersByCommittee(Committee committee);
 
     @Query(value = "select u from User u " +

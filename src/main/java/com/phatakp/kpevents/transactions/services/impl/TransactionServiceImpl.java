@@ -53,8 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
             if (authentication == null) {
                 throw new ActionNotAllowedException("Create transaction");
             }
-            String clerkId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-            memberService.assertIsCommitteeMember(request.committee(), clerkId, "Add Transaction");
+            assertIsCommitteeMember(request.committee(),"Add Transaction");
         }
 
         TransactionTypeStrategy strategy = transactionTypeFactory.getStrategy(request.txnType());
@@ -70,8 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional(readOnly = true)
     public Page<TransactionResponse> getTransactions(TransactionQueryOptions options) {
-        String clerkId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        memberService.assertIsCommitteeMember(options.committee(), clerkId, "Get Transactions");
+        assertIsCommitteeMember(options.committee(),"Get Transactions");
         Sort sort = Sort.by("updatedAt").descending();
 
         if (!options.txnType().equals(TxnType.DONATION)) {
@@ -82,10 +80,10 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         Pageable pageable = PageRequest.of(options.page(), options.size(), sort);
-        DonationType donationType = options.txnType().equals(TxnType.DONATION) && options.donationType() == null ?
+        DonationType donationType = isDonation(options) ?
                 options.committee().equals(Committee.CULTURAL) ? DonationType.CULTURAL : DonationType.TEMPLE
                 : options.donationType();
-        Building building = options.txnType().equals(TxnType.DONATION) && options.donationType() == null ?
+        Building building = isDonation(options) ?
                 options.building()==null ? Building.A : options.building() : null;
         String userName = options.txnType().equals(TxnType.TRANSFER) ? options.userName() : null;
         return transactionRepository.getFilteredTransactions(
@@ -100,8 +98,6 @@ public class TransactionServiceImpl implements TransactionService {
                 options.searchTerm(),
                 pageable
         ).map(TransactionResponse::fromEntity);
-//        TransactionTypeStrategy strategy = transactionTypeFactory.getStrategy(options.txnType());
-//        return strategy.getAll(options, pageable);
 
     }
 
@@ -113,19 +109,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public LinkedTransfer getLinkedTransfer(String txnId) {
-        Transaction txn = transactionRepository.findById(txnId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Transaction", txnId));
-        log.info("linked transfer fromUser: {}, toUser:{}", txn.getLinked().getTxnUser().getClerkId(), txn.getTxnUser().getClerkId());
+        Transaction txn = assertTxnPresent(txnId);
         return new LinkedTransfer(txn.getId(), txn.getLinked().getTxnUser().getClerkId(), txn.getTxnUser().getClerkId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTransaction(String txnId) {
-        Transaction txn = transactionRepository.findById(txnId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Transaction", txnId));
+        Transaction txn = assertTxnPresent(txnId);
         if (txn.getTxnType().equals(TxnType.TRANSFER)) {
             Transaction fromTxn = txn.getLinked();
             transactionRepository.deleteAll(List.of(fromTxn, txn));
@@ -140,16 +131,9 @@ public class TransactionServiceImpl implements TransactionService {
     @ValidTxnRequest
     public TransactionResponse updateTransaction(String txnId, TransactionRequest request) {
         try {
-            String clerkId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-            memberService.assertIsCommitteeMember(request.committee(), clerkId, "Update Transaction");
-
-            Transaction txn = transactionRepository.findById(txnId)
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Transaction", txnId));
-            if (!txn.getTxnType().equals(request.txnType()))
-                throw new BusinessRuleException("INVALID_TXN_TYPE", "Transaction type cannot be changed");
-
-
+            assertIsCommitteeMember(request.committee(),"Update Transaction");
+            Transaction txn = assertTxnPresent(txnId);
+            assertTxnTypeIsSame(request.txnType(), txn.getTxnType());
             TransactionTypeStrategy strategy = transactionTypeFactory.getStrategy(request.txnType());
             return strategy.update(txn, request);
         } catch (Exception e) {
@@ -158,4 +142,23 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    private static void assertTxnTypeIsSame(TxnType requestType, TxnType txnType) {
+        if (!txnType.equals(requestType))
+            throw new BusinessRuleException("INVALID_TXN_TYPE", "Transaction type cannot be changed");
+    }
+
+    private void assertIsCommitteeMember(Committee committee, String action){
+        String clerkId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+        memberService.assertIsCommitteeMember(committee, clerkId, action);
+    }
+
+    private Transaction assertTxnPresent(String txnId){
+        return transactionRepository.findById(txnId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Transaction", txnId));
+    }
+
+    private boolean isDonation(TransactionQueryOptions options){
+        return options.txnType().equals(TxnType.DONATION) && options.donationType() == null;
+    }
 }

@@ -8,7 +8,6 @@ import com.phatakp.kpevents.transactions.mapper.BookingMapper;
 import com.phatakp.kpevents.transactions.mapper.DonationMapper;
 import com.phatakp.kpevents.transactions.repos.DonationRepository;
 import com.phatakp.kpevents.transactions.repos.ItemRepository;
-import com.phatakp.kpevents.transactions.repos.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 public class TempleItemDonationStrategy implements DonationTypeStrategy {
     private final ItemRepository itemRepository;
     private final DonationRepository donationRepository;
-    private final TransactionRepository transactionRepository;
 
     @Override
     public Donation createDonation(TransactionRequest request) {

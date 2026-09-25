@@ -35,9 +35,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public List<UserResponse> getMembersByCommittee(Committee committee) {
         return userRepository.getUsersByCommittee(committee).stream()
-                .filter(u->u.getMemberships().stream()
-                        .anyMatch(m->m.getMemberId().getCommittee().equals(committee)))
-                .sorted(Comparator.comparing(User::getFirstName))
                 .map(UserMapper::toResponse)
                 .toList();
     }

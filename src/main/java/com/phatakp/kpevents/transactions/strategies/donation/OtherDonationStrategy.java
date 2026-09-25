@@ -6,7 +6,6 @@ import com.phatakp.kpevents.transactions.entity.Donation;
 import com.phatakp.kpevents.transactions.entity.Transaction;
 import com.phatakp.kpevents.transactions.mapper.DonationMapper;
 import com.phatakp.kpevents.transactions.repos.DonationRepository;
-import com.phatakp.kpevents.transactions.repos.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class OtherDonationStrategy implements DonationTypeStrategy {
     private final DonationRepository donationRepository;
-    private final TransactionRepository transactionRepository;
 
 
     @Override

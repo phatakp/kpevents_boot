@@ -9,7 +9,6 @@ import com.phatakp.kpevents.transactions.entity.*;
 import com.phatakp.kpevents.transactions.mapper.BookingMapper;
 import com.phatakp.kpevents.transactions.mapper.DonationMapper;
 import com.phatakp.kpevents.transactions.repos.ItemRepository;
-import com.phatakp.kpevents.transactions.repos.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class AnnadaanDonationStrategy implements DonationTypeStrategy {
     private final ConfigService configService;
     private final ItemRepository itemRepository;
-    private final TransactionRepository transactionRepository;
 
     @Override
     public Donation createDonation(TransactionRequest request) {

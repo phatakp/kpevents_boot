@@ -4,12 +4,15 @@ import com.phatakp.kpevents.common.enums.ItemType;
 import com.phatakp.kpevents.common.exceptions.DuplicateResourceException;
 import com.phatakp.kpevents.common.exceptions.ResourceNotFoundException;
 import com.phatakp.kpevents.transactions.dto.request.ItemRequest;
+import com.phatakp.kpevents.transactions.dto.response.ItemProjection;
 import com.phatakp.kpevents.transactions.dto.response.ItemResponse;
 import com.phatakp.kpevents.transactions.entity.Item;
 import com.phatakp.kpevents.transactions.mapper.ItemMapper;
 import com.phatakp.kpevents.transactions.repos.ItemRepository;
 import com.phatakp.kpevents.transactions.services.ItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,18 +23,13 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
 
     @Override
-    public List<ItemResponse> getItems(ItemType itemType, short year) {
-        return itemRepository.getItems(itemType).stream()
-                .filter(item->item.getAvailableAmt(year)>0 || item.getAvailableQty(year)>0)
-                .map(item -> ItemMapper.toResponse(item, year))
-                .toList();
+    public Page<ItemResponse> getItems(ItemType itemType, short year, Pageable pageable) {
+        return itemRepository.getAvailableItemsForYear(itemType.name(),year,pageable).map(ItemProjection::toResponse);
     }
 
     @Override
-    public List<ItemResponse> getAnnadaanItems() {
-        return itemRepository.getItems(ItemType.ANNADAAN).stream()
-                .map(ItemMapper::toResponse)
-                .toList();
+    public Page<ItemResponse> getAnnadaanItems(Pageable pageable) {
+        return itemRepository.getAnnadaanItems(pageable).map(ItemProjection::toResponse);
     }
 
     @Override

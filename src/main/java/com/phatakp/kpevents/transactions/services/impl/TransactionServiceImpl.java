@@ -7,8 +7,12 @@ import com.phatakp.kpevents.common.enums.TxnType;
 import com.phatakp.kpevents.common.exceptions.ActionNotAllowedException;
 import com.phatakp.kpevents.common.exceptions.BusinessRuleException;
 import com.phatakp.kpevents.common.exceptions.ResourceNotFoundException;
+import com.phatakp.kpevents.transactions.dto.request.TransactionQueryOptions;
 import com.phatakp.kpevents.transactions.dto.request.TransactionRequest;
-import com.phatakp.kpevents.transactions.dto.response.*;
+import com.phatakp.kpevents.transactions.dto.response.CommitteeStats;
+import com.phatakp.kpevents.transactions.dto.response.DonationStatsResponse;
+import com.phatakp.kpevents.transactions.dto.response.LinkedTransfer;
+import com.phatakp.kpevents.transactions.dto.response.TransactionResponse;
 import com.phatakp.kpevents.transactions.entity.Transaction;
 import com.phatakp.kpevents.transactions.factory.TransactionTypeFactory;
 import com.phatakp.kpevents.transactions.repos.TransactionRepository;
@@ -18,6 +22,10 @@ import com.phatakp.kpevents.transactions.validators.ValidTxnRequest;
 import com.phatakp.kpevents.users.services.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -40,9 +48,8 @@ public class TransactionServiceImpl implements TransactionService {
     @ValidTxnRequest
     public TransactionResponse createTransaction(TransactionRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (request.donationType()==null || (!request.donationType().equals(DonationType.ANNADAAN) &&
-                !request.donationType().equals(DonationType.TEMPLE_ITEM)))
-        {
+        if (request.donationType() == null || (!request.donationType().equals(DonationType.ANNADAAN) &&
+                !request.donationType().equals(DonationType.TEMPLE_ITEM))) {
             if (authentication == null) {
                 throw new ActionNotAllowedException("Create transaction");
             }
@@ -61,16 +68,40 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public TransactionPageResponse getTransactions(Committee committee,
-                                                   TxnType txnType,
-                                                   Short year,
-                                                   Building building,
-                                                   DonationType donationType) {
+    @Transactional(readOnly = true)
+    public Page<TransactionResponse> getTransactions(TransactionQueryOptions options) {
         String clerkId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        memberService.assertIsCommitteeMember(committee, clerkId, "Get Transactions");
+        memberService.assertIsCommitteeMember(options.committee(), clerkId, "Get Transactions");
+        Sort sort = Sort.by("updatedAt").descending();
 
-        TransactionTypeStrategy strategy = transactionTypeFactory.getStrategy(txnType);
-        return strategy.getAll(committee, txnType, year, building, donationType);
+        if (!options.txnType().equals(TxnType.DONATION)) {
+            sort = Sort.by("date").descending();
+        }
+        if (options.donationType() == null) {
+            sort = Sort.by("d.donorBuilding").ascending().and(Sort.by("d.donorFlat").ascending());
+        }
+
+        Pageable pageable = PageRequest.of(options.page(), options.size(), sort);
+        DonationType donationType = options.txnType().equals(TxnType.DONATION) && options.donationType() == null ?
+                options.committee().equals(Committee.CULTURAL) ? DonationType.CULTURAL : DonationType.TEMPLE
+                : options.donationType();
+        Building building = options.txnType().equals(TxnType.DONATION) && options.donationType() == null ?
+                options.building()==null ? Building.A : options.building() : null;
+        String userName = options.txnType().equals(TxnType.TRANSFER) ? options.userName() : null;
+        return transactionRepository.getFilteredTransactions(
+                options.committee(),
+                options.txnType(),
+                options.year(),
+                building,
+                donationType,
+                options.txnMode(),
+                options.txnUserId(),
+                userName,
+                options.searchTerm(),
+                pageable
+        ).map(TransactionResponse::fromEntity);
+//        TransactionTypeStrategy strategy = transactionTypeFactory.getStrategy(options.txnType());
+//        return strategy.getAll(options, pageable);
 
     }
 

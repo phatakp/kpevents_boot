@@ -3,7 +3,10 @@ package com.phatakp.kpevents.transactions.dto.response;
 import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.common.enums.TxnMode;
 import com.phatakp.kpevents.common.enums.TxnType;
+import com.phatakp.kpevents.transactions.entity.Transaction;
+import com.phatakp.kpevents.transactions.mapper.DonationMapper;
 import com.phatakp.kpevents.users.dto.response.ShortUser;
+import com.phatakp.kpevents.users.mappers.UserMapper;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Builder;
@@ -37,4 +40,18 @@ public record TransactionResponse(
 
 
 ) implements Serializable {
+        public static TransactionResponse fromEntity(Transaction txn) {
+                return new TransactionResponse(
+                        txn.getId(),
+                        txn.getDescription(),
+                        txn.getAmount(),
+                        txn.getDate(),
+                        txn.getCommittee(),
+                        txn.getYear(),
+                        UserMapper.toShortUser(txn.getTxnUser()),
+                        txn.getTxnType(),
+                        txn.getTxnMode(),
+                        DonationMapper.toResponse(txn.getDonation())
+                );
+        }
 }

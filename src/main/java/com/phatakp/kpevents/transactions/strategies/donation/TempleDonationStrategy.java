@@ -1,22 +1,14 @@
 package com.phatakp.kpevents.transactions.strategies.donation;
 
-import com.phatakp.kpevents.common.enums.Building;
-import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.common.enums.DonationType;
-import com.phatakp.kpevents.common.exceptions.BusinessRuleException;
 import com.phatakp.kpevents.transactions.dto.request.TransactionRequest;
-import com.phatakp.kpevents.transactions.dto.response.TransactionPageResponse;
-import com.phatakp.kpevents.transactions.dto.response.TransactionResponse;
 import com.phatakp.kpevents.transactions.entity.Donation;
 import com.phatakp.kpevents.transactions.entity.Transaction;
 import com.phatakp.kpevents.transactions.mapper.DonationMapper;
-import com.phatakp.kpevents.transactions.mapper.TransactionMapper;
 import com.phatakp.kpevents.transactions.repos.DonationRepository;
 import com.phatakp.kpevents.transactions.repos.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -40,17 +32,6 @@ public class TempleDonationStrategy implements DonationTypeStrategy {
         return donationRepository.save(donation);
     }
 
-    @Override
-    public TransactionPageResponse getDonations(Committee committee,  Short year, Building building, DonationType donationType) {
-        if (building == null) throw new BusinessRuleException("INVALID_BUILDING", "Building is required");
-        List<TransactionResponse> txns = transactionRepository.getDonationsByCommitteeAndBuildingAndYear(committee,
-                        building,
-                        year)
-                .stream()
-                .map(TransactionMapper::toResponse)
-                .toList();
-        return TransactionMapper.toPageResponse(txns);
-    }
 
     @Override
     public DonationType getDonationType() {

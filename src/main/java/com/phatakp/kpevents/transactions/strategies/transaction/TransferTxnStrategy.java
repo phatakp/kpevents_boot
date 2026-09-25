@@ -1,11 +1,7 @@
 package com.phatakp.kpevents.transactions.strategies.transaction;
 
-import com.phatakp.kpevents.common.enums.Building;
-import com.phatakp.kpevents.common.enums.Committee;
-import com.phatakp.kpevents.common.enums.DonationType;
 import com.phatakp.kpevents.common.enums.TxnType;
 import com.phatakp.kpevents.transactions.dto.request.TransactionRequest;
-import com.phatakp.kpevents.transactions.dto.response.TransactionPageResponse;
 import com.phatakp.kpevents.transactions.dto.response.TransactionResponse;
 import com.phatakp.kpevents.transactions.entity.Transaction;
 import com.phatakp.kpevents.transactions.mapper.TransactionMapper;
@@ -27,12 +23,12 @@ public class TransferTxnStrategy implements TransactionTypeStrategy {
     @Override
     public TransactionResponse process(TransactionRequest request) {
         String userId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        var logUser = memberService.assertIsCommitteeMember(request.committee(),userId,"Add Transfer");
+        var logUser = memberService.assertIsCommitteeMember(request.committee(), userId, "Add Transfer");
         var fromUser = memberService.assertIsCommitteeMember(request.committee(), request.txnUserId(), "Make Transfer");
         var toUser = memberService.assertIsCommitteeMember(request.committee(), request.toUserId(), "Receive Transfer");
 
         Transaction fromTxn = TransactionMapper.toEntity(request);
-        fromTxn.setAmount(request.amount()*-1);
+        fromTxn.setAmount(request.amount() * -1);
         fromTxn.setTxnUser(fromUser);
         fromTxn.setLogUser(logUser);
         fromTxn.setDescription("Transferred to " + toUser.getUserInfo());
@@ -51,12 +47,12 @@ public class TransferTxnStrategy implements TransactionTypeStrategy {
     @Override
     public TransactionResponse update(Transaction toTxn, TransactionRequest request) {
         String userId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        var logUser = memberService.assertIsCommitteeMember(request.committee(),userId,"Update Transfer");
+        var logUser = memberService.assertIsCommitteeMember(request.committee(), userId, "Update Transfer");
         var fromUser = memberService.assertIsCommitteeMember(request.committee(), request.txnUserId(), "Make Transfer");
         var toUser = memberService.assertIsCommitteeMember(request.committee(), request.toUserId(), "Receive Transfer");
 
         Transaction fromTxn = toTxn.getLinked();
-        fromTxn.setAmount(request.amount()*-1);
+        fromTxn.setAmount(request.amount() * -1);
         fromTxn.setDate(request.date());
         fromTxn.setTxnMode(request.txnMode());
         fromTxn.setTxnUser(fromUser);
@@ -76,14 +72,6 @@ public class TransferTxnStrategy implements TransactionTypeStrategy {
         return TransactionMapper.toResponse(toTxn);
     }
 
-    @Override
-    public TransactionPageResponse getAll(Committee committee, TxnType txnType, Short year, Building building, DonationType donationType) {
-        List<TransactionResponse> txns = transactionRepository.getTransfersByCommitteeAndYear(committee, year)
-                .stream()
-                .map(TransactionMapper::toResponse)
-                .toList();
-        return TransactionMapper.toPageResponse(txns);
-    }
 
     @Override
     public TxnType getType() {

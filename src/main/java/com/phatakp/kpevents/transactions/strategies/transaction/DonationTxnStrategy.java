@@ -1,12 +1,9 @@
 package com.phatakp.kpevents.transactions.strategies.transaction;
 
-import com.phatakp.kpevents.common.enums.Building;
-import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.common.enums.DonationType;
 import com.phatakp.kpevents.common.enums.TxnType;
 import com.phatakp.kpevents.common.exceptions.BusinessRuleException;
 import com.phatakp.kpevents.transactions.dto.request.TransactionRequest;
-import com.phatakp.kpevents.transactions.dto.response.TransactionPageResponse;
 import com.phatakp.kpevents.transactions.dto.response.TransactionResponse;
 import com.phatakp.kpevents.transactions.entity.Donation;
 import com.phatakp.kpevents.transactions.entity.Transaction;
@@ -34,7 +31,7 @@ public class DonationTxnStrategy implements TransactionTypeStrategy {
     public TransactionResponse process(TransactionRequest request) {
         String userId = request.txnUserId();
         if (!request.donationType().equals(DonationType.ANNADAAN) &&
-                !request.donationType().equals(DonationType.TEMPLE_ITEM)){
+                !request.donationType().equals(DonationType.TEMPLE_ITEM)) {
             userId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
         }
         var logUser = memberService.assertIsCommitteeMember(request.committee(), userId, "Add Donation");
@@ -66,10 +63,10 @@ public class DonationTxnStrategy implements TransactionTypeStrategy {
         txn.setAmount(request.amount());
 
         if (!txn.getDonation().getType().equals(request.donationType()))
-            throw new BusinessRuleException("INVALID_DONATION_TYPE","Donation type cannot be changed");
+            throw new BusinessRuleException("INVALID_DONATION_TYPE", "Donation type cannot be changed");
 
         DonationTypeStrategy strategy = donationTypeFactory.getStrategy(request.donationType());
-        Donation donation = strategy.updateDonation(txn,request);
+        Donation donation = strategy.updateDonation(txn, request);
         txn.setDonation(donation);
 
 
@@ -77,22 +74,11 @@ public class DonationTxnStrategy implements TransactionTypeStrategy {
         return TransactionMapper.toResponse(txn);
     }
 
-    @Override
-    public TransactionPageResponse getAll(Committee committee, TxnType txnType, Short year, Building building, DonationType donationType) {
-        DonationTypeStrategy strategy = donationTypeFactory.getStrategy(
-                donationType == null
-                        ? committee.equals(Committee.CULTURAL)
-                          ? DonationType.CULTURAL
-                          : DonationType.TEMPLE
-                        : donationType);
-        return strategy.getDonations(committee, year, building, donationType);
-    }
 
     @Override
     public TxnType getType() {
         return TxnType.DONATION;
     }
-
 
 
 }

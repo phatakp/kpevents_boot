@@ -2,18 +2,12 @@ package com.phatakp.kpevents.transactions.strategies.donation;
 
 import com.phatakp.kpevents.admin.entity.Config;
 import com.phatakp.kpevents.admin.services.ConfigService;
-import com.phatakp.kpevents.common.enums.Building;
-import com.phatakp.kpevents.common.enums.Committee;
 import com.phatakp.kpevents.common.enums.DonationType;
-import com.phatakp.kpevents.common.enums.ItemType;
 import com.phatakp.kpevents.common.exceptions.BusinessRuleException;
 import com.phatakp.kpevents.transactions.dto.request.TransactionRequest;
-import com.phatakp.kpevents.transactions.dto.response.TransactionPageResponse;
-import com.phatakp.kpevents.transactions.dto.response.TransactionResponse;
 import com.phatakp.kpevents.transactions.entity.*;
 import com.phatakp.kpevents.transactions.mapper.BookingMapper;
 import com.phatakp.kpevents.transactions.mapper.DonationMapper;
-import com.phatakp.kpevents.transactions.mapper.TransactionMapper;
 import com.phatakp.kpevents.transactions.repos.ItemRepository;
 import com.phatakp.kpevents.transactions.repos.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -108,13 +101,6 @@ public class AnnadaanDonationStrategy implements DonationTypeStrategy {
         return donation;
     }
 
-    @Override
-    public TransactionPageResponse getDonations(Committee committee, Short year, Building building, DonationType donationType) {
-        List<TransactionResponse> txns = transactionRepository.getAnnadaanBookingsByYear(year)
-                .stream()
-                .map(TransactionMapper::toResponse).toList();
-        return TransactionMapper.toPageResponse(txns);
-    }
 
     @Override
     public DonationType getDonationType() {

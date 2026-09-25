@@ -1,6 +1,7 @@
 package com.phatakp.kpevents.transactions.dto.response;
 
 import com.phatakp.kpevents.common.enums.ItemType;
+import com.phatakp.kpevents.transactions.entity.Item;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Builder;

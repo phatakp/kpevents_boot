@@ -28,42 +28,26 @@ public class AnnadaanDonationStrategy implements DonationTypeStrategy {
     @Override
     public Donation createDonation(TransactionRequest request) {
         Config config = configService.getConfig();
-
-        if (!config.getActiveYear().equals(request.year())) {
-            throw new BusinessRuleException("INVALID_YEAR", "Invalid year: " + request.year());
-        }
-
-        if (!config.getIsAnnadaanActive()) {
-            throw new BusinessRuleException("ANNADAAN_NOT_ACTIVE", "Annadaan Not active");
-        }
-
-        Donation donation = DonationMapper.toEntity(request);
+        assertActiveAnnadaan(config, request.year());
 
         AtomicReference<Float> totalBookingAmount = new AtomicReference<>(0.0f);
 
+        Donation donation = DonationMapper.toEntity(request);
         donation.setBookings(request.bookings().stream().map(booking -> {
-            Item item = itemRepository.findById(booking.itemId()).orElse(null);
-            if (item == null)
-                throw new BusinessRuleException("INVALID_BOOKING_ITEM", "Invalid booking item: " + booking.itemId());
-
-            if (item.getAvailableQty(request.year()) < booking.bookingQty())
-                throw new BusinessRuleException("ITEM_NOT_AVAILABLE", "Item not available: " + item.getItemName());
+            Item item = assertItemExists(booking.itemId());
+            assertItemAvailable(item, request.year(), booking.bookingQty());
 
             totalBookingAmount.updateAndGet(v -> v + item.getPrice() * booking.bookingQty());
 
             ItemBooking itemBooking = BookingMapper.toEntity(booking, request.year());
             itemBooking.setItem(item);
             itemBooking.setDonation(donation);
+            assertItemAvailable(item, request.year(), 0F);
 
-            if (item.getAvailableQty(request.year()) < 0)
-                throw new BusinessRuleException("ITEM_NOT_AVAILABLE", "Item no longer available: " + item.getItemName());
             return itemBooking;
         }).toList());
 
-
-        if (!request.amount().equals(totalBookingAmount.get()))
-            throw new BusinessRuleException("INVALID_AMOUNT", "Total Amount not equal to booking amount");
-
+        assertCorrectTotalAmt(request.amount(), totalBookingAmount.get());
         return donation;
 
     }
@@ -71,14 +55,7 @@ public class AnnadaanDonationStrategy implements DonationTypeStrategy {
     @Override
     public Donation updateDonation(Transaction txn, TransactionRequest request) {
         Config config = configService.getConfig();
-
-        if (!config.getActiveYear().equals(request.year())) {
-            throw new BusinessRuleException("INVALID_YEAR", "Invalid year: " + request.year());
-        }
-
-        if (!config.getIsAnnadaanActive()) {
-            throw new BusinessRuleException("ANNADAAN_NOT_ACTIVE", "Annadaan Not active");
-        }
+        assertActiveAnnadaan(config, request.year());
 
 
         Donation donation = txn.getDonation();
@@ -105,5 +82,28 @@ public class AnnadaanDonationStrategy implements DonationTypeStrategy {
         return DonationType.ANNADAAN;
     }
 
+    private void assertActiveAnnadaan(Config config, Short year) {
+        if (!config.getActiveYear().equals(year)) {
+            throw new BusinessRuleException("INVALID_YEAR", "Invalid year: " + year);
+        }
 
+        if (!config.getIsAnnadaanActive()) {
+            throw new BusinessRuleException("ANNADAAN_NOT_ACTIVE", "Annadaan Not active");
+        }
+    }
+
+    private Item assertItemExists(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(
+                () -> new BusinessRuleException("ITEM_NOT_FOUND", "Item not found: " + itemId));
+    }
+
+    private void assertItemAvailable(Item item, Short year, Float bookingQty) {
+        if (item.getAvailableQty(year) < bookingQty)
+            throw new BusinessRuleException("ITEM_NOT_AVAILABLE", "Item not available: " + item.getItemName());
+    }
+
+    private void assertCorrectTotalAmt(Float amount, Float totalBookingAmount){
+        if (!amount.equals(totalBookingAmount))
+            throw new BusinessRuleException("INVALID_AMOUNT", "Total Amount not equal to booking amount");
+    }
 }

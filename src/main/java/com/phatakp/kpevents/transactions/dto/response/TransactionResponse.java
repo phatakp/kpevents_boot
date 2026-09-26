@@ -13,7 +13,6 @@ import lombok.Builder;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * DTO for {@link com.phatakp.kpevents.transactions.entity.Transaction}
@@ -40,18 +39,18 @@ public record TransactionResponse(
 
 
 ) implements Serializable {
-        public static TransactionResponse fromEntity(Transaction txn) {
-                return new TransactionResponse(
-                        txn.getId(),
-                        txn.getDescription(),
-                        txn.getAmount(),
-                        txn.getDate(),
-                        txn.getCommittee(),
-                        txn.getYear(),
-                        UserMapper.toShortUser(txn.getTxnUser()),
-                        txn.getTxnType(),
-                        txn.getTxnMode(),
-                        DonationMapper.toResponse(txn.getDonation())
-                );
-        }
+    public static TransactionResponse fromEntity(Transaction txn) {
+        return new TransactionResponse(
+                txn.getId(),
+                txn.getDescription(),
+                txn.getAmount(),
+                txn.getDate(),
+                txn.getCommittee(),
+                txn.getYear(),
+                UserMapper.toShortUser(txn.getTxnUser()),
+                txn.getTxnType(),
+                txn.getTxnMode(),
+                DonationMapper.toResponse(txn.getDonation())
+        );
+    }
 }

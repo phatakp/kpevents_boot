@@ -25,32 +25,23 @@ public class TempleItemDonationStrategy implements DonationTypeStrategy {
     @Override
     public Donation createDonation(TransactionRequest request) {
 
-        Donation donation = DonationMapper.toEntity(request);
-
         AtomicReference<Float> totalBookingAmount = new AtomicReference<>(0.0f);
 
+        Donation donation = DonationMapper.toEntity(request);
         donation.setBookings(request.bookings().stream().map(booking -> {
-            Item item = itemRepository.findById(booking.itemId()).orElse(null);
-            if (item == null)
-                throw new BusinessRuleException("INVALID_BOOKING_ITEM", "Invalid booking item: " + booking.itemId());
-
-            if (item.getAvailableAmt(request.year()) < booking.bookingAmt())
-                throw new BusinessRuleException("ITEM_NOT_AVAILABLE", "Item not available: " + item.getItemName());
-
+            Item item = assertItemExists(booking.itemId());
+            assertItemAvailable(item, request.year(), booking.bookingAmt());
 
             ItemBooking itemBooking = BookingMapper.toEntity(booking, request.year());
             itemBooking.setItem(item);
             itemBooking.setDonation(donation);
             totalBookingAmount.updateAndGet(v -> v + booking.bookingAmt());
 
-            if (item.getAvailableAmt(request.year()) < 0)
-                throw new BusinessRuleException("ITEM_NOT_AVAILABLE", "Item no longer available: " + item.getItemName());
+            assertItemAvailable(item, request.year(), 0F);
             return itemBooking;
         }).toList());
 
-        if (!request.amount().equals(totalBookingAmount.get()))
-            throw new BusinessRuleException("INVALID_AMOUNT", "Total Amount not equal to booking amount");
-
+        assertCorrectTotalAmt(request.amount(), totalBookingAmount.get());
         return donation;
 
     }
@@ -82,5 +73,18 @@ public class TempleItemDonationStrategy implements DonationTypeStrategy {
         return DonationType.TEMPLE_ITEM;
     }
 
+    private Item assertItemExists(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(
+                () -> new BusinessRuleException("ITEM_NOT_FOUND", "Item not found: " + itemId));
+    }
 
+    private void assertItemAvailable(Item item, Short year, Float bookingAmt) {
+        if (item.getAvailableAmt(year) < bookingAmt)
+            throw new BusinessRuleException("ITEM_NOT_AVAILABLE", "Item not available: " + item.getItemName());
+    }
+
+    private void assertCorrectTotalAmt(Float amount, Float totalBookingAmount) {
+        if (!amount.equals(totalBookingAmount))
+            throw new BusinessRuleException("INVALID_AMOUNT", "Total Amount not equal to booking amount");
+    }
 }

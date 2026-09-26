@@ -59,53 +59,5 @@ public class UserMapper {
                 .build();
     }
 
-//    public static UserBalance toUserBalance(User user) {
-//        if (user == null) return null;
-//
-//        //Get total balance
-//        Double totalBalance = user.getUserTxns().stream()
-//                .mapToDouble(Transaction::getAmount)
-//                .sum();
-//
-//        //Sum on the basis of year, txnType and donationType
-//        var balances = user.getUserTxns().stream()
-//                .collect(Collectors.toMap(txn->
-//                        List.of(txn.getCommittee(),
-//                                txn.getYear(),
-//                                txn.getTxnType(),
-//                                txn.getDonation()!=null?txn.getDonation().getType():"null"),
-//                        txn -> new BalanceStat(
-//                                txn.getCommittee(),
-//                                txn.getYear(),
-//                                txn.getTxnType(), txn.getDonation()!=null?txn.getDonation().getType().name():null,
-//                                txn.getAmount()),
-//                        (existing, replacement) -> new BalanceStat(
-//                                existing.committee(),
-//                                existing.year(),
-//                                existing.txnType(), existing.donationType(),
-//                                existing.balance()+replacement.balance())));
-//
-//        return UserBalance.builder()
-//                .clerkId(user.getClerkId())
-//                .firstName(user.getFirstName())
-//                .lastName(user.getLastName())
-//                .building(user.getBuilding())
-//                .flat(user.getFlat())
-//                .total(totalBalance)
-//                .balances(new ArrayList<>(balances.values()))
-//                .build();
-//    }
 
-//    public static UserBalance toUserBalance(User user) {
-//        if (user == null) return null;
-//        return UserBalance.builder()
-//                .clerkId(user.getClerkId())
-//                .firstName(user.getFirstName())
-//                .lastName(user.getLastName())
-//                .building(user.getBuilding())
-//                .flat(user.getFlat())
-//                .total((double) 0)
-//                .balances(new ArrayList<>())
-//                .build();
-//    }
 }

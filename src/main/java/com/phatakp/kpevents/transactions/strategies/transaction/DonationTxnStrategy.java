@@ -55,6 +55,8 @@ public class DonationTxnStrategy implements TransactionTypeStrategy {
         String userId = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
         var logUser = memberService.assertIsCommitteeMember(request.committee(), userId, "Update Donation");
         var txnUser = memberService.assertIsCommitteeMember(request.committee(), request.txnUserId(), "Receive Donation");
+        assertDonationTypeIsSame(txn.getDonation().getType(), request.donationType());
+
         txn.setTxnUser(txnUser);
         txn.setLogUser(logUser);
         txn.setDescription(request.description());
@@ -62,13 +64,9 @@ public class DonationTxnStrategy implements TransactionTypeStrategy {
         txn.setTxnMode(request.txnMode());
         txn.setAmount(request.amount());
 
-        if (!txn.getDonation().getType().equals(request.donationType()))
-            throw new BusinessRuleException("INVALID_DONATION_TYPE", "Donation type cannot be changed");
-
         DonationTypeStrategy strategy = donationTypeFactory.getStrategy(request.donationType());
         Donation donation = strategy.updateDonation(txn, request);
         txn.setDonation(donation);
-
 
         txn = transactionRepository.save(txn);
         return TransactionMapper.toResponse(txn);
@@ -80,5 +78,8 @@ public class DonationTxnStrategy implements TransactionTypeStrategy {
         return TxnType.DONATION;
     }
 
-
+    private void assertDonationTypeIsSame(DonationType txnDonationType, DonationType requestDonationType){
+        if (!txnDonationType.equals(requestDonationType))
+            throw new BusinessRuleException("INVALID_DONATION_TYPE", "Donation type cannot be changed");
+    }
 }
